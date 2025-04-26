@@ -1,6 +1,7 @@
 
 import { Github, Mail, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
@@ -18,6 +19,14 @@ export const HeroSection = () => {
             Crafting intelligent solutions at the intersection of AI and software engineering. 
             Specialized in machine learning, deep learning, and scalable AI systems.
           </p>
+          <div className="flex justify-center gap-4 mb-6">
+            <Link to="/skills">
+              <Button variant="outline">View Skills</Button>
+            </Link>
+            <Link to="/contact">
+              <Button variant="outline">Contact Me</Button>
+            </Link>
+          </div>
           <div className="flex justify-center gap-4">
             <Button variant="outline" size="icon">
               <Github className="h-5 w-5" />
@@ -34,3 +43,4 @@ export const HeroSection = () => {
     </section>
   );
 };
+
