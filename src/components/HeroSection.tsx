@@ -1,11 +1,9 @@
-
 import { Github, Mail, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
-    <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center relative overflow-hidden pt-16">
       {/* Animated background elements */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 animate-gradient-x" />
@@ -41,14 +39,6 @@ export const HeroSection = () => {
             Crafting intelligent solutions at the intersection of AI and software engineering. 
             Specialized in machine learning, deep learning, and scalable AI systems.
           </p>
-          <div className="flex justify-center gap-4 mb-6">
-            <Link to="/skills">
-              <Button variant="outline">View Skills</Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="outline">Contact Me</Button>
-            </Link>
-          </div>
           <div className="flex justify-center gap-4">
             <Button variant="outline" size="icon">
               <Github className="h-5 w-5" />
