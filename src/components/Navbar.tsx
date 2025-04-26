@@ -12,6 +12,12 @@ export const Navbar = () => {
             JA
           </Link>
           <div className="flex items-center gap-4">
+            <Link to="/projects">
+              <Button variant="ghost" className="gap-2">
+                <Briefcase className="h-4 w-4" />
+                Projects
+              </Button>
+            </Link>
             <Link to="/skills">
               <Button variant="ghost" className="gap-2">
                 <Star className="h-4 w-4" />

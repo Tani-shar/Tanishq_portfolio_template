@@ -1,7 +1,27 @@
-import { Github, Mail, Linkedin } from "lucide-react";
+
+import { Github, Mail, Linkedin, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+
+const titles = [
+  "Web3 Enthusiast",
+  "MERN Stack Developer",
+  "AI Engineer",
+  "Rust Developer",
+  "Machine Learning Engineer"
+];
 
 export const HeroSection = () => {
+  const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTitleIndex((prev) => (prev + 1) % titles.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden pt-16">
       {/* Animated background elements */}
@@ -32,9 +52,11 @@ export const HeroSection = () => {
           <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-secondary">
             John Anderson
           </h1>
-          <p className="text-xl md:text-2xl text-foreground/80">
-            AI & Machine Learning Engineer
-          </p>
+          <div className="h-8"> {/* Fixed height container for smooth transitions */}
+            <p className="text-xl md:text-2xl text-foreground/80 animate-fade-in">
+              {titles[currentTitleIndex]}
+            </p>
+          </div>
           <p className="max-w-2xl mx-auto text-foreground/60">
             Crafting intelligent solutions at the intersection of AI and software engineering. 
             Specialized in machine learning, deep learning, and scalable AI systems.
@@ -48,6 +70,10 @@ export const HeroSection = () => {
             </Button>
             <Button variant="outline" size="icon">
               <Mail className="h-5 w-5" />
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Download className="h-5 w-5" />
+              Resume
             </Button>
           </div>
         </div>
