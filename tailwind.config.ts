@@ -20,6 +20,7 @@ export default {
       animation: {
         "gradient-x": "gradient-x 15s ease infinite",
         "fade-in": "fade-in 1s ease-out",
+        "float": "float 10s ease-in-out infinite",
       },
       keyframes: {
         "gradient-x": {
@@ -40,6 +41,14 @@ export default {
           "100%": {
             opacity: "1",
             transform: "translateY(0)",
+          },
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-20px)",
           },
         },
       },
