@@ -8,7 +8,7 @@ export const Navbar = () => {
 
   const navItems = [
     { to: "/projects", label: "Projects", icon: <Briefcase className="h-4 w-4" /> },
-    { to: "/skills", label: "Skills", icon: <Star className="h-4 w-4" /> },
+    // { to: "/skills", label: "Skills", icon: <Star className="h-4 w-4" /> },
     { to: "/contact", label: "Contact", icon: <User className="h-4 w-4" /> },
   ];
 
@@ -17,7 +17,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="text-2xl font-extrabold font-mono bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 animate-text-glow">
-            JA
+            TS
           </Link>
           <div className="flex items-center gap-2">
             {navItems.map((item) => (

@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 const projects = [
   {
@@ -22,172 +22,221 @@ const projects = [
   },
 ];
 
-export const ProjectsSection = () => {
-  return (
-    <section className="py-20 bg-gray-950 relative overflow-hidden">
-      {/* Tech-inspired Animated Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-teal-900/20 animate-gradient-tech" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0),rgba(0,0,0,0.7))]" />
-        {/* Hexagonal Grid Overlay */}
-        <div className="absolute inset-0 opacity-15 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEwIDIwYzAtMS4xLjktMiAyLTJzMiAxLjEgMiAyLTktMi0yLTJ6TTIwIDBjLTEuMSAwLTIgLjktMiAycy45IDIgMiAyIDItLjkgMi0yLTItLjktMi0yem0yMCAwYy0xLjEgMC0yIC45LTIgMnMuOSAyIDIgMiAyLS45IDItMi0yLS45LTIgMnptLTIwIDE4Yy0xLjEgMC0yIC45LTIgMnMuOSAyIDIgMiAyLS45IDItMi0yLS45LTIgMnptMjAgMGMtMS4xIDAtMiAuOS0yIDJzLjkgMiAyIDIgMi0uOSAyLTIgMi0uOS0yLTJ6IiBmaWxsPSIjMDBGRkZGIiBmaWxsLW9wYWNpdHk9IjAuNSIvPjwvc3ZnPg==')] bg-repeat animate-grid-pulse" />
-        {/* Glowing Particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-blue-500/40 rounded-full animate-particle-pulse"
-              style={{
-                width: `${Math.random() * 12 + 8}px`,
-                height: `${Math.random() * 12 + 8}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                boxShadow: '0 0 12px rgba(59, 130, 246, 0.6)',
-                animationDuration: `${Math.random() * 8 + 4}s`,
-                animationDelay: `${Math.random() * -5}s`,
-              }}
-            />
-          ))}
-        </div>
-        {/* Subtle Glitch Overlay */}
-        <div className="absolute inset-0 opacity-10 animate-glitch">
-          <div className="w-full h-full bg-[linear-gradient(0deg,transparent,rgba(255,255,255,0.1),transparent)]" />
-        </div>
-      </div>
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+};
 
+const cardVariants = {
+  hidden: { opacity: 0, rotateX: 90 },
+  visible: {
+    opacity: 1,
+    rotateX: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 },
+  },
+};
+
+export const ProjectsSection = () => {
+  const canvasRef = useRef(null);
+  const sectionRef = useRef(null);
+  const clickParticlesRef = useRef([]);
+  const [clickParticles, setClickParticles] = useState([]);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const canvasY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const canvasOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.3, 0.6, 0.6, 0.3]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let mouse = { x: null, y: null };
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = sectionRef.current.offsetHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      radius: Math.random() * 3 + 2,
+      glow: Math.random() * 0.5 + 0.5,
+    }));
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        if (mouse.x && mouse.y) {
+          const dx = mouse.x - p.x;
+          const dy = mouse.y - p.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 150) {
+            const force = (150 - distance) / 150;
+            p.vx += (dx / distance) * force * 0.1;
+            p.vy += (dy / distance) * force * 0.1;
+          }
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 2);
+        gradient.addColorStop(0, `rgba(147, 197, 253, ${p.glow})`);
+        gradient.addColorStop(1, "rgba(147, 197, 253, 0)");
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.closePath();
+
+        particles.slice(i + 1).forEach((p2) => {
+          const dx = p2.x - p.x;
+          const dy = p2.y - p.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 150) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(147, 197, 253, ${1 - distance / 150})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.closePath();
+          }
+        });
+      });
+
+      clickParticlesRef.current = clickParticlesRef.current
+        .map((cp) => ({
+          ...cp,
+          x: cp.x + cp.vx,
+          y: cp.y + cp.vy,
+          life: cp.life - 1,
+          radius: cp.radius * 0.95,
+        }))
+        .filter((cp) => cp.life > 0);
+
+      clickParticlesRef.current.forEach((cp) => {
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, cp.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(147, 197, 253, ${cp.life / 50})`;
+        ctx.fill();
+        ctx.closePath();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  const handleClick = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const newParticles = Array.from({ length: 10 }, () => ({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 5,
+      vy: (Math.random() - 0.5) * 5,
+      radius: Math.random() * 3 + 2,
+      life: 50,
+    }));
+    clickParticlesRef.current = [...clickParticlesRef.current, ...newParticles];
+    setClickParticles(clickParticlesRef.current);
+  };
+
+  return (
+    <section className="py-20 bg-black relative overflow-hidden" ref={sectionRef}>
+      <motion.canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-0"
+        style={{ y: canvasY, opacity: canvasOpacity, filter: "drop-shadow(0 0 10px rgba(147, 197, 253, 0.3))" }}
+        onClick={handleClick}
+      />
       <div className="container mx-auto px-4 relative z-10">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 animate-text-glow">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-extrabold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 animate-text-glow font-mono"
+        >
           Featured Projects
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
+        </motion.h2>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {projects.map((project) => (
             <motion.div
               key={project.title}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: index * 0.2, ease: "easeOut" }}
-              viewport={{ once: true }}
+              className="group overflow-hidden bg-transparent border border-blue-500/20 rounded-lg"
+              variants={cardVariants}
             >
-              <Card
-                className="group overflow-hidden backdrop-blur-2xl bg-white/5 border border-white/10 transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-2"
-              >
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={`https://images.unsplash.com/${project.image}?auto=format&fit=crop&w=800&q=80`}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:brightness-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent" />
+              <div className="relative h-56 overflow-hidden">
+                <img
+                  src={`https://images.unsplash.com/${project.image}?auto=format&fit=crop&w=800&q=80`}
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:brightness-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              </div>
+              <div className="p-6 space-y-4">
+                <h3 className="text-xl font-semibold text-white animate-text-glow font-mono">
+                  {project.title}
+                </h3>
+                <p className="text-gray-300/90 text-base leading-relaxed font-mono">
+                  {project.description}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {project.tech.map((tech) => (
+                    <motion.span
+                      key={tech}
+                      className="px-3 py-1 text-sm rounded-full bg-transparent text-blue-400 border border-blue-500/20 transition-all duration-300 hover:bg-blue-500/20 hover:text-blue-300 hover:shadow-md hover:shadow-blue-500/30 font-mono"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {tech}
+                    </motion.span>
+                  ))}
                 </div>
-                <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold text-white animate-text-glow font-mono">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-300/90 text-base leading-relaxed font-mono">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech) => (
-                      <motion.span
-                        key={tech}
-                        className="px-3 py-1 text-sm rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all duration-300 hover:bg-blue-500/20 hover:text-blue-300 hover:shadow-md hover:shadow-blue-500/30"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {tech}
-                      </motion.span>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+              </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
-
-      {/* Custom CSS for Animations */}
-      <style jsx>{`
-        @keyframes gradient-tech {
-          0% {
-            background-position: 0% 0%;
-          }
-          50% {
-            background-position: 200% 200%;
-          }
-          100% {
-            background-position: 0% 0%;
-          }
-        }
-
-        @keyframes particle-pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.6;
-          }
-          50% {
-            transform: scale(1.2);
-            opacity: 1;
-          }
-        }
-
-        @keyframes grid-pulse {
-          0%, 100% {
-            opacity: 0.15;
-          }
-          50% {
-            opacity: 0.3;
-          }
-        }
-
-        @keyframes glitch {
-          0% {
-            transform: translate(0);
-          }
-          20% {
-            transform: translate(-2px, 2px);
-          }
-          40% {
-            transform: translate(2px, -2px);
-          }
-          60% {
-            transform: translate(-1px, 1px);
-          }
-          80% {
-            transform: translate(1px, -1px);
-          }
-          100% {
-            transform: translate(0);
-          }
-        }
-
+      <style>{`
         @keyframes text-glow {
-          0%, 100% {
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7), 0 0 20px rgba(59, 130, 246, 0.5);
-          }
-          50% {
-            text-shadow: 0 0 20px rgba(59, 130, 246, 0.9), 0 0 30px rgba(59, 130, 246, 0.7);
-          }
+          0%, 100% { text-shadow: 0 0 10px rgba(59, 130, 246, 0.7), 0 0 20px rgba(59, 130, 246, 0.5); }
+          50% { text-shadow: 0 0 20px rgba(59, 130, 246, 0.9), 0 0 30px rgba(59, 130, 246, 0.7); }
         }
-
-        .animate-gradient-tech {
-          background-size: 400% 400%;
-          animation: gradient-tech 20s ease infinite;
-        }
-
-        .animate-particle-pulse {
-          animation: particle-pulse 6s ease-in-out infinite;
-        }
-
-        .animate-grid-pulse {
-          animation: grid-pulse 12s ease-in-out infinite;
-        }
-
-        .animate-glitch {
-          animation: glitch 5s steps(5) infinite;
-        }
-
-        .animate-text-glow {
-          animation: text-glow 3s ease-in-out infinite;
+        .animate-text-glow { animation: text-glow 3s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-text-glow { animation: none; }
         }
       `}</style>
     </section>

@@ -1,13 +1,59 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export const AboutSection = () => {
-  const sectionRef = useRef(null);
+const experiences = [
+  {
+    title: "Senior AI Engineer",
+    company: "TechCorp",
+    url: "https://techcorp.example.com",
+    period: "Jan 2022 - Present",
+    description:
+      "Leading development of next-generation AI solutions, specializing in machine learning and deep learning. Architected scalable MLOps pipelines and deployed transformer-based models.",
+    tech: ["Python", "PyTorch", "AWS", "Kubernetes"],
+  },
+  {
+    title: "AI Engineer | AI Innovations",
+    company: "AI Innovations",
+    url: "https://aiinnovations.example.com",
+    period: "Jun 2019 - Dec 2021",
+    description:
+      "Developed neural search engines using vector embeddings and contributed to generative AI projects. Optimized model performance for real-time applications.",
+    tech: ["TensorFlow", "Elasticsearch", "TypeScript"],
+  },
+  {
+    title: "Software Engineer",
+    company: "DataTech Solutions",
+    url: "https://datatech.example.com",
+    period: "May 2017 - May 2019",
+    description:
+      "Built data pipelines and machine learning models for enterprise clients. Collaborated on full-stack applications integrating AI-driven insights.",
+    tech: ["Python", "React", "Docker"],
+  },
+];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.3 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15 },
+  },
+};
+
+export const ExperienceSection = () => {
   const canvasRef = useRef(null);
+  const sectionRef = useRef(null);
   const clickParticlesRef = useRef([]);
   const [clickParticles, setClickParticles] = useState([]);
 
-  // Scroll-based parallax
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -15,7 +61,6 @@ export const AboutSection = () => {
   const canvasY = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const canvasOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.3, 0.6, 0.6, 0.3]);
 
-  // Particle network animation
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -133,16 +178,6 @@ export const AboutSection = () => {
     setClickParticles(clickParticlesRef.current);
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.3 } },
-  };
-  const textVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  };
-
   return (
     <section className="py-20 bg-black relative overflow-hidden" ref={sectionRef}>
       <motion.canvas
@@ -159,38 +194,62 @@ export const AboutSection = () => {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl font-extrabold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 animate-text-glow font-mono"
         >
-          About Me
+          Experience
         </motion.h2>
         <motion.div
-          className="max-w-3xl mx-auto space-y-6 flex flex-col md:flex-row items-center"
+          className="space-y-12 max-w-3xl mx-auto"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <motion.img
-            src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80"
-            alt="Profile"
-            className="w-32 h-32 rounded-full mb-6 md:mb-0 md:mr-8"
-            variants={{
-              hidden: { opacity: 0, scale: 0.8 },
-              visible: { opacity: 1, scale: 1, transition: { duration: 0.8 } },
-            }}
-          />
-          <div>
-            <motion.p
-              className="text-lg text-gray-300/90 leading-relaxed font-mono"
-              variants={textVariants}
+          {experiences.map((exp) => (
+            <motion.div
+              key={exp.title + exp.company}
+              className="experience-item"
+              variants={itemVariants}
             >
-              With over 5 years of experience in AI and software development, I specialize in building intelligent systems that solve complex problems. My expertise spans machine learning, deep learning, and large-scale AI applications.
-            </motion.p>
-            <motion.p
-              className="text-lg text-gray-300/90 leading-relaxed font-mono mt-4"
-              variants={textVariants}
-            >
-              Currently working as a Senior AI Engineer at TechCorp, where I lead the development of next-generation AI solutions. Previously, I contributed to groundbreaking projects at AI Innovations and DataTech Solutions.
-            </motion.p>
-          </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-semibold text-white font-mono">
+                    {exp.title}
+                  </h3>
+                  <motion.div whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9 }}>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-transparent text-blue-400 border-blue-500/20 hover:bg-blue-500/20 hover:text-blue-300 hover:shadow-md hover:shadow-blue-500/30 transition-all duration-300"
+                      onClick={(e) => {
+                        handleClick(e);
+                        window.open(exp.url, "_blank");
+                      }}
+                      aria-label={`Visit ${exp.company}`}
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                    </Button>
+                  </motion.div>
+                </div>
+                <p className="text-lg text-gray-300/90 font-mono">
+                  <span className="text-blue-400">{exp.company}</span> | {exp.period}
+                </p>
+                <p className="text-base text-gray-300/90 leading-relaxed font-mono">
+                  {exp.description}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {exp.tech.map((tech) => (
+                    <motion.span
+                      key={tech}
+                      className="px-3 py-1 text-sm rounded-full bg-transparent text-blue-400 border border-blue-500/20 transition-all duration-300 hover:bg-blue-500/20 hover:text-blue-300 hover:shadow-md hover:shadow-blue-500/30 font-mono"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {tech}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
       <style>{`

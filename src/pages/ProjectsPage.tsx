@@ -1,12 +1,11 @@
-
 import { Navbar } from "@/components/Navbar";
 import { ProjectsSection } from "@/components/ProjectsSection";
 
 const ProjectsPage = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-screen bg-black text-white flex flex-col">
       <Navbar />
-      <div className="pt-16">
+      <div className="flex-1 overflow-y-auto">
         <ProjectsSection />
       </div>
     </div>
